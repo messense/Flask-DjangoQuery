@@ -18,7 +18,7 @@ Or you can clone or download it then:
 ```bash
 cd Flask-DjangoQuery
 python setup.py install
-``
+```
 
 ## Usage
 
