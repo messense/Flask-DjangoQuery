@@ -24,6 +24,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pub_date = db.Column(db.Datetime)
     title = db.Column(db.String(50))
+```
 
 ## Example queries
 
@@ -33,3 +34,5 @@ Post.query.exclude_by(id=42)
 Post.query.filter_by(title__contains='something')
 Post.query.order_by('-post__pub_date')
 ```
+
+For more please view the codes of [flask_djangoquery.py](flask_djangoquery.py)
