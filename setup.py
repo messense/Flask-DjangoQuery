@@ -17,7 +17,7 @@ setup(name='Flask-DjangoQuery',
       py_modules=['flask_djangoquery'],
       zip_safe=False,
       platforms='any',
-      install_requires=['Flask', 'SQLAlchemy', 'Flask-SQLAlchemy'],
+      install_requires=open("requirements.txt").readlines(),
       classifiers=[
           'Development Status :: 4 - Beta',
           'Environment :: Web Environment',

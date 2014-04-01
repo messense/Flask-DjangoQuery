@@ -2,7 +2,7 @@
     Flask-DjangoQuery
     ~~~~~~~~~~~~~~~~~~~~~~~
 
-    A module that implements a more Django like interface for SQLAlchemy
+    A module that implements a more Django like interface for Flask-SQLAlchemy
     query objects.  It's still API compatible with the regular one but
     extends it with Djangoisms.
 
