@@ -3,6 +3,23 @@ Flask-DjangoQuery
 
 A module that implements a more Django like interface for Flask-SQLAlchemy query objects.  It's still API compatible with the regular one but extends it with Djangoisms.
 
+## Installation
+
+Install Flask-DjangoQuery with pip:
+
+    $ [sudo] pip install Flask-DjangoQuery
+
+Install Flask-DjangoQuery with easy_install:
+
+    $ [sudo] easy_install Flask-DjangoQuery
+
+Or you can clone or download it then:
+
+```bash
+cd Flask-DjangoQuery
+python setup.py install
+``
+
 ## Usage
 
 ```python
@@ -15,7 +32,7 @@ db = SQLAlchemy()
 db.init_app(app)
 ```
 
-Then you can use it just like Flask-SQLAlchemy.
+Then you can use it just like [Flask-SQLAlchemy](https://github.com/mitsuhiko/flask-sqlalchemy) while have a more *Django like* `filter_by`, `exclude_by` and `order_by` interface.
 
 ### Define a model
 
