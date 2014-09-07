@@ -14,7 +14,7 @@
         Post.query.filter_by(blog__name__exact='something')
         Post.query.order_by('-blog__name')
 """
-__version_info__ = ('0', '2', '3')
+__version_info__ = ('0', '2', '4')
 __version__ = '.'.join(__version_info__)
 __author__ = 'Messense Lv'
 
@@ -105,9 +105,9 @@ class JSONSerializableBase(object):
         Defines interfaces utilized by :cls:ApiJSONEncoder
     """
 
-    def __json__(self, excluded_keys=set()):
+    def __json__(self, exclude_columns=set()):
         return {name: getattr(self, name)
-                for name in get_entity_loaded_propnames(self) - excluded_keys}
+                for name in get_entity_loaded_propnames(self) - exclude_columns}
 
 
 class DynamicJSONEncoder(JSONEncoder):
@@ -120,10 +120,10 @@ class DynamicJSONEncoder(JSONEncoder):
     def default(self, o):
         # Custom JSON-encodeable objects
         if hasattr(o, '__json__'):
-            excluded_keys = set()
-            if hasattr(o, '__excluded_keys__'):
-                excluded_keys = set(o.__excluded_keys__)
-            return o.__json__(excluded_keys)
+            exclude_columns = set()
+            if hasattr(o, '__exclude_columns__'):
+                exclude_columns = set(o.__exclude_columns__)
+            return o.__json__(exclude_columns)
 
         # Default
         return super(DynamicJSONEncoder, self).default(o)
