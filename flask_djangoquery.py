@@ -14,7 +14,7 @@
         Post.query.filter_by(blog__name__exact='something')
         Post.query.order_by('-blog__name')
 """
-__version_info__ = ('0', '1', '1')
+__version_info__ = ('0', '1', '2')
 __version__ = '.'.join(__version_info__)
 __author__ = 'Messense Lv'
 
@@ -22,6 +22,7 @@ from sqlalchemy import inspection, exc as sa_exc
 from sqlalchemy.orm import joinedload, joinedload_all
 from sqlalchemy.util import to_list
 from sqlalchemy.sql import operators, extract
+from sqlalchemy.orm.state import InstanceState
 from sqlalchemy.ext.declarative import declarative_base
 from flask.ext.sqlalchemy import _BoundDeclarativeMeta, _QueryProperty
 from flask.ext.sqlalchemy import BaseQuery, SQLAlchemy as FlaskSQLAlchemy
@@ -52,6 +53,60 @@ def _entity_descriptor(entity, key):
     except AttributeError:
         raise sa_exc.InvalidRequestError("Entity '%s' has no property '%s'" %
                                          (description, key))
+
+
+def get_entity_propnames(entity):
+    """ Get entity property names
+
+        :param entity: Entity
+        :type entity: sqlalchemy.ext.declarative.api.DeclarativeMeta
+        :returns: Set of entity property names
+        :rtype: set
+    """
+    is_instance_state = isinstance(entity, InstanceState)
+    ins = entity if is_instance_state else inspection.inspect(entity)
+    return set(
+        ins.mapper.column_attrs.keys() +  # Columns
+        ins.mapper.relationships.keys()  # Relationships
+    )
+
+
+def get_entity_loaded_propnames(entity):
+    """ Get entity property names that are loaded
+        (e.g. won't produce new queries)
+
+        :param entity: Entity
+        :type entity: sqlalchemy.ext.declarative.api.DeclarativeMeta
+        :returns: Set of entity property names
+        :rtype: set
+    """
+    ins = inspection.inspect(entity)
+    keynames = get_entity_propnames(ins)
+
+    # If the entity is not transient -- exclude unloaded keys
+    # Transient entities won't load these anyway,
+    # so it's safe to include all columns and get defaults
+    if not ins.transient:
+        keynames -= ins.unloaded
+
+    # If the entity is expired -- reload expired attributes as well
+    # Expired attributes are usually unloaded as well!
+    if ins.expired:
+        keynames |= ins.expired_attributes
+
+    # Finish
+    return keynames
+
+
+class JSONSerializableBase(object):
+    """ Declarative Base mixin to allow objects serialization
+
+        Defines interfaces utilized by :cls:ApiJSONEncoder
+    """
+
+    def __json__(self, exluded_keys=set()):
+        return {name: getattr(self, name)
+                for name in get_entity_loaded_propnames(self) - exluded_keys}
 
 
 """
@@ -179,7 +234,7 @@ class SQLAlchemy(FlaskSQLAlchemy):
 
     def make_declarative_base(self):
         """Creates the declarative base."""
-        base = declarative_base(cls=Model,
+        base = declarative_base(cls=(JSONSerializableBase, Model),
                                 name='Model',
                                 metaclass=_BoundDeclarativeMeta)
         base.query = _QueryProperty(self)
