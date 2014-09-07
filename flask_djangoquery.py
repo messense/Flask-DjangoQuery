@@ -14,10 +14,11 @@
         Post.query.filter_by(blog__name__exact='something')
         Post.query.order_by('-blog__name')
 """
-__version_info__ = ('0', '2', '0')
+__version_info__ = ('0', '2', '1')
 __version__ = '.'.join(__version_info__)
 __author__ = 'Messense Lv'
 
+from json import JSONEncoder
 from sqlalchemy import inspection, exc as sa_exc
 from sqlalchemy.orm import joinedload, joinedload_all
 from sqlalchemy.util import to_list
@@ -107,6 +108,22 @@ class JSONSerializableBase(object):
     def __json__(self, exluded_keys=set()):
         return {name: getattr(self, name)
                 for name in get_entity_loaded_propnames(self) - exluded_keys}
+
+
+class DynamicJSONEncoder(JSONEncoder):
+    """ JSON encoder for custom classes:
+
+        Uses __json__() method if available to prepare the object.
+        Especially useful for SQLAlchemy models
+    """
+
+    def default(self, o):
+        # Custom JSON-encodeable objects
+        if hasattr(o, '__json__'):
+            return o.__json__()
+
+        # Default
+        return super(DynamicJSONEncoder, self).default(o)
 
 
 """
@@ -231,6 +248,10 @@ class Model(FlaskModel):
 
 
 class SQLAlchemy(FlaskSQLAlchemy):
+
+    def init_app(self, app):
+        super(SQLAlchemy, self).init_app(app)
+        app.json_encoder = DynamicJSONEncoder
 
     def make_declarative_base(self):
         """Creates the declarative base."""
