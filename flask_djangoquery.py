@@ -14,11 +14,11 @@
         Post.query.filter_by(blog__name__exact='something')
         Post.query.order_by('-blog__name')
 """
-__version_info__ = ('0', '2', '1')
+__version_info__ = ('0', '2', '2')
 __version__ = '.'.join(__version_info__)
 __author__ = 'Messense Lv'
 
-from json import JSONEncoder
+from flask.json import JSONEncoder
 from sqlalchemy import inspection, exc as sa_exc
 from sqlalchemy.orm import joinedload, joinedload_all
 from sqlalchemy.util import to_list
